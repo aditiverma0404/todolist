@@ -3,410 +3,497 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Keep</title>
+  <title>Tasks - Material Design 3</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Material Design 3 Web Components -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <script type="importmap">
+    {
+      "imports": {
+        "@material/web/": "https://esm.run/@material/web/"
+      }
+    }
+  </script>
+  <script type="module">
+    import '@material/web/all.js';
+    import {styles as typescaleStyles} from '@material/web/typography/md-typescale-styles.js';
+    document.adoptedStyleSheets.push(typescaleStyles.styleSheet);
+  </script>
+  
   <style>
+    :root {
+      /* Material Design 3 Color Tokens - Dynamic Light Theme */
+      --md-sys-color-primary: #6750A4;
+      --md-sys-color-on-primary: #FFFFFF;
+      --md-sys-color-primary-container: #EADDFF;
+      --md-sys-color-on-primary-container: #21005E;
+      
+      --md-sys-color-secondary: #625B71;
+      --md-sys-color-on-secondary: #FFFFFF;
+      --md-sys-color-secondary-container: #E8DEF8;
+      --md-sys-color-on-secondary-container: #1E192B;
+      
+      --md-sys-color-tertiary: #7D5260;
+      --md-sys-color-on-tertiary: #FFFFFF;
+      --md-sys-color-tertiary-container: #FFD8E4;
+      --md-sys-color-on-tertiary-container: #370B1E;
+      
+      --md-sys-color-error: #BA1A1A;
+      --md-sys-color-on-error: #FFFFFF;
+      --md-sys-color-error-container: #FFDAD6;
+      --md-sys-color-on-error-container: #410002;
+      
+      --md-sys-color-surface: #FEF7FF;
+      --md-sys-color-on-surface: #1D1B20;
+      --md-sys-color-surface-variant: #E7E0EC;
+      --md-sys-color-on-surface-variant: #49454E;
+      
+      --md-sys-color-outline: #7A757F;
+      --md-sys-color-outline-variant: #CAC4CF;
+      
+      --md-sys-color-background: #FEF7FF;
+      --md-sys-color-on-background: #1D1B20;
+      
+      --md-sys-color-surface-container-lowest: #FFFFFF;
+      --md-sys-color-surface-container-low: #F8F2FA;
+      --md-sys-color-surface-container: #F3EDF7;
+      --md-sys-color-surface-container-high: #ECE6F0;
+      --md-sys-color-surface-container-highest: #E6E0E9;
+      
+      /* Elevation */
+      --md-sys-elevation-1: 0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
+      --md-sys-elevation-2: 0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15);
+      --md-sys-elevation-3: 0px 4px 8px 3px rgba(0, 0, 0, 0.15), 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
+      
+      /* Shape */
+      --md-sys-shape-corner-extra-small: 4px;
+      --md-sys-shape-corner-small: 8px;
+      --md-sys-shape-corner-medium: 12px;
+      --md-sys-shape-corner-large: 16px;
+      --md-sys-shape-corner-extra-large: 28px;
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'Roboto', 'Google Sans', Arial, sans-serif;
-      background: #fff;
-      color: #202124;
-      font-size: 14px;
-      line-height: 20px;
+      font-family: 'Roboto', sans-serif;
+      background: var(--md-sys-color-background);
+      color: var(--md-sys-color-on-background);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
-    /* ── Header ── */
-    .header {
+    /* Top App Bar */
+    .app-bar {
       height: 64px;
+      background: var(--md-sys-color-surface-container);
       display: flex;
       align-items: center;
-      padding: 8px;
-      border-bottom: 1px solid #e0e0e0;
+      padding: 0 4px 0 16px;
+      box-shadow: var(--md-sys-elevation-2);
       position: sticky;
       top: 0;
-      background: #fff;
-      z-index: 50;
+      z-index: 100;
     }
 
-    .logo-area {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      margin-left: 8px;
-      margin-right: 24px;
+    .app-bar-title {
+      font-size: 22px;
+      font-weight: 400;
+      color: var(--md-sys-color-on-surface);
+      letter-spacing: 0;
+      flex: 1;
     }
 
-    .logo-icon {
-      width: 40px;
-      height: 40px;
+    .icon-button {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: none;
+      background: none;
+      color: var(--md-sys-color-on-surface-variant);
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: background 0.2s;
       font-size: 24px;
     }
 
-    .logo-text {
-      font-family: 'Google Sans', sans-serif;
-      font-size: 22px;
-      font-weight: 400;
-      color: #5f6368;
-      letter-spacing: 0;
+    .icon-button:hover {
+      background: rgba(103, 80, 164, 0.08);
     }
 
-    .search-bar {
-      flex: 1;
-      max-width: 720px;
-      height: 48px;
-      background: #f1f3f4;
-      border-radius: 8px;
-      padding: 0 16px;
-      font-size: 16px;
-      border: none;
-      outline: none;
-      color: #202124;
+    .icon-button:active {
+      background: rgba(103, 80, 164, 0.12);
     }
 
-    .search-bar:focus {
-      background: #fff;
-      box-shadow: 0 1px 1px 0 rgba(65,69,73,.3), 0 1px 3px 1px rgba(65,69,73,.15);
-    }
-
-    /* ── Main Container ── */
+    /* Main Content */
     .main {
-      max-width: 900px;
+      max-width: 1280px;
       margin: 0 auto;
-      padding: 32px 16px;
+      padding: 24px 16px 80px;
     }
 
-    /* ── Input area (expandable) ── */
-    .note-input-container {
+    /* FAB for adding tasks */
+    .fab-container {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      z-index: 90;
+    }
+
+    md-fab {
+      --md-fab-container-color: var(--md-sys-color-primary-container);
+      --md-fab-icon-color: var(--md-sys-color-on-primary-container);
+    }
+
+    /* Input Card */
+    .input-card {
       max-width: 600px;
       margin: 0 auto 32px;
-      background: #fff;
-      border: 1px solid #e0e0e0;
-      border-radius: 8px;
-      box-shadow: 0 1px 2px 0 rgba(60,64,67,.3), 0 1px 3px 1px rgba(60,64,67,.15);
-      padding: 12px 16px;
-      cursor: text;
-      transition: box-shadow 0.2s;
+      background: var(--md-sys-color-surface-container-high);
+      border-radius: var(--md-sys-shape-corner-large);
+      box-shadow: var(--md-sys-elevation-1);
+      padding: 16px;
+      transition: box-shadow 0.2s, background 0.2s;
     }
 
-    .note-input-container:hover {
-      box-shadow: 0 1px 2px 0 rgba(60,64,67,.3), 0 2px 6px 2px rgba(60,64,67,.15);
+    .input-card:hover {
+      box-shadow: var(--md-sys-elevation-2);
     }
 
-    .note-input-form {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+    .input-card:focus-within {
+      background: var(--md-sys-color-surface-container-highest);
+      box-shadow: var(--md-sys-elevation-3);
     }
 
-    .note-input {
-      border: none;
-      outline: none;
-      font-size: 16px;
-      font-family: 'Roboto', sans-serif;
-      color: #202124;
-      resize: none;
-      min-height: 20px;
+    md-outlined-text-field {
+      width: 100%;
+      --md-outlined-text-field-container-shape: var(--md-sys-shape-corner-medium);
     }
 
-    .note-input::placeholder {
-      color: #5f6368;
-    }
-
-    .note-input-actions {
+    .input-actions {
       display: flex;
       justify-content: flex-end;
       gap: 8px;
+      margin-top: 16px;
     }
 
-    .btn {
-      background: none;
-      border: none;
-      padding: 8px 24px;
-      border-radius: 4px;
-      font-size: 14px;
-      font-weight: 500;
+    md-filled-button {
+      --md-filled-button-container-color: var(--md-sys-color-primary);
+      --md-filled-button-label-text-color: var(--md-sys-color-on-primary);
+    }
+
+    /* Task Grid */
+    .tasks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Task Card */
+    .task-card {
+      background: var(--md-sys-color-surface-container-low);
+      border-radius: var(--md-sys-shape-corner-large);
+      padding: 16px;
+      box-shadow: var(--md-sys-elevation-1);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
-      font-family: 'Google Sans', 'Roboto', sans-serif;
-      color: #202124;
-      transition: background 0.2s;
-    }
-
-    .btn:hover {
-      background: rgba(95,99,104,0.039);
-    }
-
-    .btn-primary {
-      color: #1967d2;
-    }
-
-    .btn-primary:hover {
-      background: rgba(26,115,232,0.039);
-    }
-
-    /* ── Notes Grid (Masonry) ── */
-    .notes-grid {
-      column-count: 1;
-      column-gap: 16px;
-    }
-
-    @media (min-width: 600px) {
-      .notes-grid { column-count: 2; }
-    }
-
-    @media (min-width: 900px) {
-      .notes-grid { column-count: 3; }
-    }
-
-    .note-card {
-      break-inside: avoid;
-      margin-bottom: 16px;
-      background: #fff;
-      border: 1px solid #e0e0e0;
-      border-radius: 8px;
-      padding: 12px 16px;
-      cursor: pointer;
-      transition: box-shadow 0.2s;
       position: relative;
+      overflow: hidden;
+      border: 1px solid var(--md-sys-color-outline-variant);
     }
 
-    .note-card:hover {
-      box-shadow: 0 1px 2px 0 rgba(60,64,67,.3), 0 1px 3px 1px rgba(60,64,67,.15);
+    .task-card:hover {
+      box-shadow: var(--md-sys-elevation-2);
+      background: var(--md-sys-color-surface-container);
+      transform: translateY(-2px);
     }
 
-    .note-card-content {
+    .task-card.completed {
+      background: var(--md-sys-color-surface-container-lowest);
+      opacity: 0.7;
+    }
+
+    .task-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--md-sys-color-primary);
+      transform: scaleY(0);
+      transition: transform 0.2s;
+    }
+
+    .task-card:hover::before {
+      transform: scaleY(1);
+    }
+
+    .task-content {
+      font-size: 16px;
+      line-height: 24px;
+      color: var(--md-sys-color-on-surface);
+      margin-bottom: 12px;
       word-wrap: break-word;
-      color: #202124;
-      font-size: 14px;
-      line-height: 20px;
-      min-height: 46px;
-      display: flex;
-      align-items: center;
+      min-height: 48px;
     }
 
-    .note-card.completed .note-card-content {
+    .task-card.completed .task-content {
       text-decoration: line-through;
-      color: #5f6368;
+      color: var(--md-sys-color-on-surface-variant);
     }
 
-    .note-card-actions {
+    .task-actions {
       display: flex;
       gap: 4px;
-      margin-top: 8px;
       opacity: 0;
       transition: opacity 0.2s;
     }
 
-    .note-card:hover .note-card-actions {
+    .task-card:hover .task-actions {
       opacity: 1;
     }
 
-    .icon-btn {
-      width: 32px;
-      height: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: none;
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      color: #5f6368;
-      font-size: 18px;
-      transition: background 0.2s;
+    md-icon-button {
+      --md-icon-button-icon-color: var(--md-sys-color-on-surface-variant);
     }
 
-    .icon-btn:hover {
-      background: rgba(95,99,104,0.078);
+    md-icon-button:hover {
+      --md-icon-button-icon-color: var(--md-sys-color-primary);
     }
 
+    /* Empty State */
     .empty-state {
       text-align: center;
-      padding: 80px 16px;
-      color: #5f6368;
+      padding: 80px 24px;
+      max-width: 400px;
+      margin: 0 auto;
     }
 
     .empty-icon {
-      font-size: 120px;
-      opacity: 0.3;
+      font-size: 96px;
+      color: var(--md-sys-color-outline-variant);
       margin-bottom: 16px;
+      opacity: 0.6;
     }
 
-    .empty-text {
-      font-size: 22px;
+    .empty-title {
+      font-size: 24px;
       font-weight: 400;
-      color: #5f6368;
+      color: var(--md-sys-color-on-surface);
+      margin-bottom: 8px;
     }
 
-    .config-error {
-      background: #fce8e6;
-      border: 1px solid #f28b82;
-      border-radius: 8px;
-      padding: 16px 20px;
-      color: #d93025;
+    .empty-description {
       font-size: 14px;
+      color: var(--md-sys-color-on-surface-variant);
       line-height: 20px;
+    }
+
+    /* Snackbar */
+    .snackbar {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--md-sys-color-inverse-surface);
+      color: var(--md-sys-color-inverse-on-surface);
+      padding: 14px 16px;
+      border-radius: var(--md-sys-shape-corner-small);
+      box-shadow: var(--md-sys-elevation-3);
+      font-size: 14px;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 200;
+      max-width: 344px;
+    }
+
+    .snackbar.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Config Error */
+    .config-error {
       max-width: 600px;
-      margin: 32px auto;
+      margin: 40px auto;
+      background: var(--md-sys-color-error-container);
+      color: var(--md-sys-color-on-error-container);
+      padding: 20px 24px;
+      border-radius: var(--md-sys-shape-corner-large);
+      border-left: 4px solid var(--md-sys-color-error);
     }
 
     .config-error strong {
       display: block;
+      font-size: 16px;
       font-weight: 500;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
     }
 
     .config-error code {
-      background: rgba(217,48,37,0.1);
-      padding: 2px 6px;
+      background: rgba(0, 0, 0, 0.1);
+      padding: 2px 8px;
       border-radius: 4px;
       font-family: 'Roboto Mono', monospace;
       font-size: 13px;
     }
 
-    /* Status bar */
-    .status-bar {
-      position: fixed;
-      bottom: 16px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #323232;
-      color: #fff;
-      padding: 8px 16px;
-      border-radius: 4px;
-      font-size: 14px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s;
-      z-index: 100;
-    }
-
-    .status-bar.show {
-      opacity: 0.9;
+    /* Ripple effect simulation */
+    @keyframes ripple {
+      to {
+        transform: scale(4);
+        opacity: 0;
+      }
     }
   </style>
 </head>
 <body>
 
-  <!-- Header -->
-  <header class="header">
-    <div class="logo-area">
-      <div class="logo-icon">💡</div>
-      <div class="logo-text">Keep</div>
-    </div>
-    <input type="text" class="search-bar" placeholder="Search" aria-label="Search notes" />
+  <!-- Top App Bar -->
+  <header class="app-bar">
+    <h1 class="app-bar-title">✨ Tasks</h1>
+    <button class="icon-button" title="Search">
+      <span class="material-icons">search</span>
+    </button>
+    <button class="icon-button" title="More options">
+      <span class="material-icons">more_vert</span>
+    </button>
   </header>
 
-  <!-- Main -->
+  <!-- Main Content -->
   <main class="main">
     {% if not supabase_url or not supabase_key %}
       <div class="config-error">
-        <strong>⚠️ Supabase credentials not configured.</strong>
-        Set the following environment variables in your Vercel project settings, then redeploy:<br><br>
-        <code>SUPABASE_URL</code> — your Supabase project URL<br>
-        <code>SUPABASE_KEY</code> — your anon / publishable API key
+        <strong>⚠️ Configuration Required</strong>
+        Set <code>SUPABASE_URL</code> and <code>SUPABASE_KEY</code> environment variables in your deployment settings, then redeploy the application.
       </div>
     {% else %}
-      <!-- Note input -->
-      <div class="note-input-container">
-        <form class="note-input-form" id="note-form">
-          <textarea 
-            class="note-input" 
-            id="note-input" 
-            placeholder="Take a note..."
-            rows="1"
+      <!-- Input Card -->
+      <div class="input-card">
+        <form id="task-form">
+          <md-outlined-text-field
+            id="task-input"
+            label="Add a new task"
+            type="text"
             required
-          ></textarea>
-          <div class="note-input-actions">
-            <button type="submit" class="btn btn-primary">Add</button>
+          ></md-outlined-text-field>
+          <div class="input-actions">
+            <md-filled-button type="submit">
+              <span class="material-icons" slot="icon">add</span>
+              Add Task
+            </md-filled-button>
           </div>
         </form>
       </div>
 
-      <!-- Notes grid -->
-      <div class="notes-grid" id="notes-grid"></div>
+      <!-- Tasks Grid -->
+      <div class="tasks-grid" id="tasks-grid"></div>
 
-      <!-- Empty state -->
+      <!-- Empty State -->
       <div class="empty-state" id="empty-state" style="display:none;">
-        <div class="empty-icon">💡</div>
-        <div class="empty-text">Notes you add appear here</div>
+        <div class="empty-icon">
+          <span class="material-icons" style="font-size:inherit">task_alt</span>
+        </div>
+        <div class="empty-title">No tasks yet</div>
+        <div class="empty-description">
+          Add your first task to get started with managing your work
+        </div>
       </div>
     {% endif %}
   </main>
 
-  <!-- Status toast -->
-  <div class="status-bar" id="status-bar"></div>
+  <!-- FAB (optional, for mobile) -->
+  {% if supabase_url and supabase_key %}
+  <div class="fab-container">
+    <md-fab id="fab-add" aria-label="Add task">
+      <span class="material-icons" slot="icon">add</span>
+    </md-fab>
+  </div>
+  {% endif %}
+
+  <!-- Snackbar -->
+  <div class="snackbar" id="snackbar"></div>
 
 {% if supabase_url and supabase_key %}
-<script>
+<script type="module">
   const SUPABASE_URL = {{ supabase_url | tojson }};
   const SUPABASE_KEY = {{ supabase_key | tojson }};
 
   const { createClient } = window.supabase;
   const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  const noteForm = document.getElementById('note-form');
-  const noteInput = document.getElementById('note-input');
-  const notesGrid = document.getElementById('notes-grid');
+  const taskForm = document.getElementById('task-form');
+  const taskInput = document.getElementById('task-input');
+  const tasksGrid = document.getElementById('tasks-grid');
   const emptyState = document.getElementById('empty-state');
-  const statusBar = document.getElementById('status-bar');
+  const snackbar = document.getElementById('snackbar');
+  const fabAdd = document.getElementById('fab-add');
 
-  let statusTimeout = null;
+  let snackbarTimeout = null;
 
-  function showStatus(msg) {
-    statusBar.textContent = msg;
-    statusBar.classList.add('show');
-    clearTimeout(statusTimeout);
-    statusTimeout = setTimeout(() => {
-      statusBar.classList.remove('show');
-    }, 2000);
+  function showSnackbar(message) {
+    snackbar.textContent = message;
+    snackbar.classList.add('show');
+    clearTimeout(snackbarTimeout);
+    snackbarTimeout = setTimeout(() => {
+      snackbar.classList.remove('show');
+    }, 3000);
   }
 
-  function renderNotes(notes) {
-    notesGrid.innerHTML = '';
+  function renderTasks(tasks) {
+    tasksGrid.innerHTML = '';
     
-    if (!notes || notes.length === 0) {
+    if (!tasks || tasks.length === 0) {
       emptyState.style.display = 'block';
-      notesGrid.style.display = 'none';
+      tasksGrid.style.display = 'none';
       return;
     }
 
     emptyState.style.display = 'none';
-    notesGrid.style.display = 'block';
+    tasksGrid.style.display = 'grid';
 
-    notes.forEach(note => {
+    tasks.forEach(task => {
       const card = document.createElement('div');
-      card.className = 'note-card' + (note.is_complete ? ' completed' : '');
+      card.className = 'task-card' + (task.is_complete ? ' completed' : '');
       
       const content = document.createElement('div');
-      content.className = 'note-card-content';
-      content.textContent = note.task;
+      content.className = 'task-content';
+      content.textContent = task.task;
 
       const actions = document.createElement('div');
-      actions.className = 'note-card-actions';
+      actions.className = 'task-actions';
 
       // Toggle button
-      const toggleBtn = document.createElement('button');
-      toggleBtn.className = 'icon-btn';
-      toggleBtn.title = note.is_complete ? 'Mark as incomplete' : 'Mark as complete';
-      toggleBtn.innerHTML = note.is_complete ? '↩' : '✓';
+      const toggleBtn = document.createElement('md-icon-button');
+      toggleBtn.title = task.is_complete ? 'Mark incomplete' : 'Mark complete';
+      const toggleIcon = document.createElement('span');
+      toggleIcon.className = 'material-icons';
+      toggleIcon.slot = 'icon';
+      toggleIcon.textContent = task.is_complete ? 'undo' : 'check_circle';
+      toggleBtn.appendChild(toggleIcon);
       toggleBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        toggleNote(note.id, note.is_complete);
+        toggleTask(task.id, task.is_complete);
       });
 
       // Delete button
-      const deleteBtn = document.createElement('button');
-      deleteBtn.className = 'icon-btn';
-      deleteBtn.title = 'Delete note';
-      deleteBtn.innerHTML = '🗑';
+      const deleteBtn = document.createElement('md-icon-button');
+      deleteBtn.title = 'Delete task';
+      const deleteIcon = document.createElement('span');
+      deleteIcon.className = 'material-icons';
+      deleteIcon.slot = 'icon';
+      deleteIcon.textContent = 'delete';
+      deleteBtn.appendChild(deleteIcon);
       deleteBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        deleteNote(note.id);
+        deleteTask(task.id);
       });
 
       actions.appendChild(toggleBtn);
@@ -414,27 +501,28 @@
 
       card.appendChild(content);
       card.appendChild(actions);
-      notesGrid.appendChild(card);
+      tasksGrid.appendChild(card);
     });
   }
 
-  async function loadNotes() {
+  async function loadTasks() {
     const { data, error } = await db
       .from('todos')
       .select('*')
       .order('created_at', { ascending: false });
     
     if (error) {
-      console.error('Failed to load notes:', error);
+      showSnackbar('Failed to load tasks');
+      console.error(error);
       return;
     }
     
-    renderNotes(data);
+    renderTasks(data);
   }
 
-  noteForm.addEventListener('submit', async (e) => {
+  taskForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const task = noteInput.value.trim();
+    const task = taskInput.value.trim();
     if (!task) return;
 
     const { error } = await db
@@ -442,56 +530,54 @@
       .insert({ task, is_complete: false });
     
     if (error) {
-      showStatus('Failed to add note');
+      showSnackbar('Failed to add task');
       console.error(error);
       return;
     }
 
-    noteInput.value = '';
-    noteInput.rows = 1;
-    await loadNotes();
+    taskInput.value = '';
+    await loadTasks();
+    showSnackbar('Task added');
   });
 
-  async function toggleNote(id, currentState) {
+  fabAdd.addEventListener('click', () => {
+    taskInput.focus();
+  });
+
+  async function toggleTask(id, currentState) {
     const { error } = await db
       .from('todos')
       .update({ is_complete: !currentState })
       .eq('id', id);
     
     if (error) {
-      showStatus('Failed to update');
+      showSnackbar('Failed to update task');
       console.error(error);
       return;
     }
 
-    await loadNotes();
+    await loadTasks();
+    showSnackbar(currentState ? 'Task incomplete' : 'Task completed');
   }
 
-  async function deleteNote(id) {
+  async function deleteTask(id) {
     const { error } = await db
       .from('todos')
       .delete()
       .eq('id', id);
     
     if (error) {
-      showStatus('Failed to delete');
+      showSnackbar('Failed to delete task');
       console.error(error);
       return;
     }
 
-    showStatus('Note deleted');
-    await loadNotes();
+    await loadTasks();
+    showSnackbar('Task deleted');
   }
 
-  // Auto-expand textarea
-  noteInput.addEventListener('input', () => {
-    noteInput.rows = 1;
-    const rows = Math.ceil(noteInput.scrollHeight / 20);
-    noteInput.rows = Math.min(rows, 10);
-  });
-
   // Initial load
-  loadNotes();
+  loadTasks();
 </script>
 {% endif %}
 </body>
