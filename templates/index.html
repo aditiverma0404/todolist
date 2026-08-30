@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>To-Do List</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -17,33 +18,121 @@
       padding: 48px 16px;
     }
 
+    /* ── Setup modal ── */
+    #setup-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+    #setup-overlay.active { display: flex; }
+
+    #setup-box {
+      background: #fff;
+      border-radius: 16px;
+      padding: 36px;
+      width: 100%;
+      max-width: 460px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    }
+
+    #setup-box h2 {
+      font-size: 1.4rem;
+      color: #1a1a2e;
+      margin-bottom: 8px;
+    }
+
+    #setup-box p {
+      font-size: 0.9rem;
+      color: #6b7280;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+
+    .field { margin-bottom: 16px; }
+
+    .field label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 6px;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+      color: #1a1a2e;
+      font-family: monospace;
+    }
+
+    .field input:focus { border-color: #6366f1; }
+
+    #setup-error {
+      color: #ef4444;
+      font-size: 0.85rem;
+      margin-bottom: 12px;
+      display: none;
+    }
+
+    #setup-submit {
+      width: 100%;
+      padding: 12px;
+      background: #6366f1;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    #setup-submit:hover { background: #4f46e5; }
+    #setup-submit:disabled { background: #a5b4fc; cursor: not-allowed; }
+
+    /* ── Main app ── */
     .container {
       background: #ffffff;
       border-radius: 16px;
-      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
       padding: 40px;
       width: 100%;
       max-width: 560px;
     }
 
-    h1 {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #1a1a2e;
-      margin-bottom: 8px;
-    }
-
-    .subtitle {
-      color: #6b7280;
-      font-size: 0.95rem;
-      margin-bottom: 32px;
-    }
-
-    .add-form {
+    .header {
       display: flex;
-      gap: 10px;
-      margin-bottom: 32px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
     }
+
+    h1 { font-size: 2rem; font-weight: 700; color: #1a1a2e; }
+
+    #reset-btn {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: color 0.2s, background 0.2s;
+    }
+    #reset-btn:hover { color: #ef4444; background: #fef2f2; }
+
+    .subtitle { color: #6b7280; font-size: 0.95rem; margin-bottom: 32px; }
+
+    .add-form { display: flex; gap: 10px; margin-bottom: 32px; }
 
     .add-form input[type="text"] {
       flex: 1;
@@ -55,10 +144,7 @@
       transition: border-color 0.2s;
       color: #1a1a2e;
     }
-
-    .add-form input[type="text"]:focus {
-      border-color: #6366f1;
-    }
+    .add-form input[type="text"]:focus { border-color: #6366f1; }
 
     .add-form button {
       padding: 12px 20px;
@@ -72,17 +158,10 @@
       transition: background 0.2s;
       white-space: nowrap;
     }
+    .add-form button:hover { background: #4f46e5; }
+    .add-form button:disabled { background: #a5b4fc; cursor: not-allowed; }
 
-    .add-form button:hover {
-      background: #4f46e5;
-    }
-
-    .todo-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
+    .todo-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
 
     .todo-item {
       display: flex;
@@ -93,132 +172,311 @@
       border-radius: 12px;
       transition: border-color 0.2s, background 0.2s;
     }
+    .todo-item:hover { border-color: #e5e7eb; background: #fafafa; }
+    .todo-item.done { background: #f9fafb; border-color: #e5e7eb; }
+    .todo-item.done .task-text { text-decoration: line-through; color: #9ca3af; }
 
-    .todo-item:hover {
-      border-color: #e5e7eb;
-      background: #fafafa;
-    }
-
-    .todo-item.done {
-      background: #f9fafb;
-      border-color: #e5e7eb;
-    }
-
-    .todo-item.done .task-text {
-      text-decoration: line-through;
-      color: #9ca3af;
-    }
-
-    .toggle-form button {
-      width: 22px;
-      height: 22px;
+    .toggle-btn {
+      width: 22px; height: 22px;
       border-radius: 50%;
       border: 2px solid #d1d5db;
       background: white;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
       transition: background 0.2s, border-color 0.2s;
-      padding: 0;
+      padding: 0; font-size: 11px; font-weight: 700; color: white;
     }
+    .todo-item.done .toggle-btn { background: #6366f1; border-color: #6366f1; }
 
-    .todo-item.done .toggle-form button {
-      background: #6366f1;
-      border-color: #6366f1;
+    .task-text { flex: 1; font-size: 1rem; color: #374151; word-break: break-word; }
+
+    .delete-btn {
+      background: none; border: none; color: #d1d5db;
+      font-size: 1.3rem; cursor: pointer; padding: 4px;
+      border-radius: 6px; transition: color 0.2s, background 0.2s; line-height: 1;
     }
+    .delete-btn:hover { color: #ef4444; background: #fef2f2; }
 
-    .toggle-form button::after {
-      content: '';
-      display: block;
-      width: 10px;
-      height: 10px;
-    }
+    .empty { text-align: center; color: #9ca3af; font-size: 0.95rem; padding: 32px 0; }
 
-    .todo-item.done .toggle-form button::after {
-      content: '✓';
-      color: white;
-      font-size: 11px;
-      font-weight: 700;
-    }
+    .stats { margin-top: 24px; font-size: 0.85rem; color: #9ca3af; text-align: right; }
 
-    .task-text {
-      flex: 1;
-      font-size: 1rem;
-      color: #374151;
-      word-break: break-word;
-    }
-
-    .delete-form button {
-      background: none;
-      border: none;
-      color: #d1d5db;
-      font-size: 1.2rem;
-      cursor: pointer;
-      padding: 4px;
-      border-radius: 6px;
-      transition: color 0.2s, background 0.2s;
-      line-height: 1;
-    }
-
-    .delete-form button:hover {
-      color: #ef4444;
-      background: #fef2f2;
-    }
-
-    .empty {
+    #status-bar {
+      font-size: 0.8rem;
+      color: #9ca3af;
       text-align: center;
-      color: #9ca3af;
-      font-size: 0.95rem;
-      padding: 32px 0;
+      margin-top: 16px;
+      min-height: 18px;
     }
-
-    .stats {
-      margin-top: 24px;
-      font-size: 0.85rem;
-      color: #9ca3af;
-      text-align: right;
-    }
+    #status-bar.error { color: #ef4444; }
   </style>
 </head>
 <body>
+
+  <!-- Setup modal -->
+  <div id="setup-overlay" role="dialog" aria-modal="true" aria-labelledby="setup-title">
+    <div id="setup-box">
+      <h2 id="setup-title">🔑 Connect to Supabase</h2>
+      <p>Enter your Supabase project URL and anon/publishable key. These are saved only in your browser.</p>
+      <div class="field">
+        <label for="input-url">Project URL</label>
+        <input id="input-url" type="text" placeholder="https://xxxx.supabase.co" autocomplete="off" spellcheck="false" />
+      </div>
+      <div class="field">
+        <label for="input-key">API Key (anon / publishable)</label>
+        <input id="input-key" type="text" placeholder="sb_publishable_..." autocomplete="off" spellcheck="false" />
+      </div>
+      <p id="setup-error"></p>
+      <button id="setup-submit">Connect</button>
+    </div>
+  </div>
+
+  <!-- Main app -->
   <div class="container">
-    <h1>📝 To-Do List</h1>
+    <div class="header">
+      <h1>📝 To-Do List</h1>
+      <button id="reset-btn" title="Change Supabase credentials">⚙ Change credentials</button>
+    </div>
     <p class="subtitle">Stay on top of your tasks.</p>
 
-    <form class="add-form" action="/add" method="POST">
-      <input
-        type="text"
-        name="task"
-        placeholder="Add a new task..."
-        required
-        autocomplete="off"
-        aria-label="New task"
-      />
-      <button type="submit">Add</button>
+    <form class="add-form" id="add-form">
+      <input type="text" id="task-input" placeholder="Add a new task..." required autocomplete="off" aria-label="New task" />
+      <button type="submit" id="add-btn">Add</button>
     </form>
 
-    {% if todos %}
-      <ul class="todo-list">
-        {% for todo in todos %}
-          <li class="todo-item {% if todo.is_complete %}done{% endif %}">
-            <form class="toggle-form" action="/toggle/{{ todo.id }}" method="POST">
-              <button type="submit" title="{% if todo.is_complete %}Mark incomplete{% else %}Mark complete{% endif %}" aria-label="Toggle task"></button>
-            </form>
-            <span class="task-text">{{ todo.task }}</span>
-            <form class="delete-form" action="/delete/{{ todo.id }}" method="POST">
-              <button type="submit" title="Delete task" aria-label="Delete task">×</button>
-            </form>
-          </li>
-        {% endfor %}
-      </ul>
-      <p class="stats">
-        {{ todos | selectattr('is_complete') | list | length }} / {{ todos | length }} completed
-      </p>
-    {% else %}
-      <p class="empty">No tasks yet. Add one above!</p>
-    {% endif %}
+    <ul class="todo-list" id="todo-list"></ul>
+    <p class="empty" id="empty-msg" style="display:none">No tasks yet. Add one above!</p>
+    <p class="stats" id="stats" style="display:none"></p>
+    <p id="status-bar"></p>
   </div>
+
+<script>
+  const STORAGE_URL_KEY = 'sb_url';
+  const STORAGE_KEY_KEY = 'sb_key';
+
+  let supabase = null;
+
+  // ── DOM refs ──
+  const overlay     = document.getElementById('setup-overlay');
+  const inputUrl    = document.getElementById('input-url');
+  const inputKey    = document.getElementById('input-key');
+  const setupSubmit = document.getElementById('setup-submit');
+  const setupError  = document.getElementById('setup-error');
+  const addForm     = document.getElementById('add-form');
+  const taskInput   = document.getElementById('task-input');
+  const addBtn      = document.getElementById('add-btn');
+  const todoList    = document.getElementById('todo-list');
+  const emptyMsg    = document.getElementById('empty-msg');
+  const statsEl     = document.getElementById('stats');
+  const statusBar   = document.getElementById('status-bar');
+  const resetBtn    = document.getElementById('reset-btn');
+
+  // ── Helpers ──
+  function setStatus(msg, isError = false) {
+    statusBar.textContent = msg;
+    statusBar.className = isError ? 'error' : '';
+  }
+
+  function showSetup() {
+    overlay.classList.add('active');
+    inputUrl.value = localStorage.getItem(STORAGE_URL_KEY) || '';
+    inputKey.value = localStorage.getItem(STORAGE_KEY_KEY) || '';
+    setupError.style.display = 'none';
+    setupError.textContent = '';
+  }
+
+  function hideSetup() {
+    overlay.classList.remove('active');
+  }
+
+  // ── Init Supabase ──
+  async function initSupabase(url, key) {
+    try {
+      const client = window.supabase.createClient(url.trim(), key.trim());
+      // Test the connection with a simple query
+      const { error } = await client.from('todos').select('id').limit(1);
+      if (error && error.code !== 'PGRST116') {
+        // PGRST116 = no rows, that's fine. Anything else is a real error.
+        throw new Error(error.message);
+      }
+      return client;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  // ── Setup form submit ──
+  setupSubmit.addEventListener('click', async () => {
+    const url = inputUrl.value.trim();
+    const key = inputKey.value.trim();
+
+    if (!url || !key) {
+      setupError.textContent = 'Both fields are required.';
+      setupError.style.display = 'block';
+      return;
+    }
+    if (!url.startsWith('https://')) {
+      setupError.textContent = 'URL must start with https://';
+      setupError.style.display = 'block';
+      return;
+    }
+
+    setupSubmit.disabled = true;
+    setupSubmit.textContent = 'Connecting…';
+    setupError.style.display = 'none';
+
+    try {
+      supabase = await initSupabase(url, key);
+      localStorage.setItem(STORAGE_URL_KEY, url);
+      localStorage.setItem(STORAGE_KEY_KEY, key);
+      hideSetup();
+      await loadTodos();
+    } catch (e) {
+      setupError.textContent = 'Connection failed: ' + e.message;
+      setupError.style.display = 'block';
+      supabase = null;
+    } finally {
+      setupSubmit.disabled = false;
+      setupSubmit.textContent = 'Connect';
+    }
+  });
+
+  // ── Reset ──
+  resetBtn.addEventListener('click', () => {
+    showSetup();
+  });
+
+  // ── Render todos ──
+  function renderTodos(todos) {
+    todoList.innerHTML = '';
+    if (!todos || todos.length === 0) {
+      emptyMsg.style.display = 'block';
+      statsEl.style.display = 'none';
+      return;
+    }
+    emptyMsg.style.display = 'none';
+    statsEl.style.display = 'block';
+
+    const done = todos.filter(t => t.is_complete).length;
+    statsEl.textContent = `${done} / ${todos.length} completed`;
+
+    todos.forEach(todo => {
+      const li = document.createElement('li');
+      li.className = 'todo-item' + (todo.is_complete ? ' done' : '');
+      li.dataset.id = todo.id;
+
+      const toggleBtn = document.createElement('button');
+      toggleBtn.className = 'toggle-btn';
+      toggleBtn.title = todo.is_complete ? 'Mark incomplete' : 'Mark complete';
+      toggleBtn.setAttribute('aria-label', 'Toggle task');
+      toggleBtn.textContent = todo.is_complete ? '✓' : '';
+      toggleBtn.addEventListener('click', () => toggleTodo(todo.id, todo.is_complete));
+
+      const span = document.createElement('span');
+      span.className = 'task-text';
+      span.textContent = todo.task;
+
+      const delBtn = document.createElement('button');
+      delBtn.className = 'delete-btn';
+      delBtn.title = 'Delete task';
+      delBtn.setAttribute('aria-label', 'Delete task');
+      delBtn.textContent = '×';
+      delBtn.addEventListener('click', () => deleteTodo(todo.id));
+
+      li.appendChild(toggleBtn);
+      li.appendChild(span);
+      li.appendChild(delBtn);
+      todoList.appendChild(li);
+    });
+  }
+
+  // ── Load todos ──
+  async function loadTodos() {
+    setStatus('Loading…');
+    try {
+      const { data, error } = await supabase
+        .from('todos')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      renderTodos(data);
+      setStatus('');
+    } catch (e) {
+      setStatus('Failed to load: ' + e.message, true);
+    }
+  }
+
+  // ── Add todo ──
+  addForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const task = taskInput.value.trim();
+    if (!task || !supabase) return;
+
+    addBtn.disabled = true;
+    setStatus('Adding…');
+    try {
+      const { error } = await supabase
+        .from('todos')
+        .insert({ task, is_complete: false });
+      if (error) throw error;
+      taskInput.value = '';
+      await loadTodos();
+    } catch (e) {
+      setStatus('Failed to add: ' + e.message, true);
+    } finally {
+      addBtn.disabled = false;
+    }
+  });
+
+  // ── Toggle todo ──
+  async function toggleTodo(id, current) {
+    setStatus('Updating…');
+    try {
+      const { error } = await supabase
+        .from('todos')
+        .update({ is_complete: !current })
+        .eq('id', id);
+      if (error) throw error;
+      await loadTodos();
+    } catch (e) {
+      setStatus('Failed to update: ' + e.message, true);
+    }
+  }
+
+  // ── Delete todo ──
+  async function deleteTodo(id) {
+    setStatus('Deleting…');
+    try {
+      const { error } = await supabase
+        .from('todos')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+      await loadTodos();
+    } catch (e) {
+      setStatus('Failed to delete: ' + e.message, true);
+    }
+  }
+
+  // ── Boot ──
+  (async () => {
+    const savedUrl = localStorage.getItem(STORAGE_URL_KEY);
+    const savedKey = localStorage.getItem(STORAGE_KEY_KEY);
+
+    if (savedUrl && savedKey) {
+      setStatus('Connecting…');
+      try {
+        supabase = await initSupabase(savedUrl, savedKey);
+        await loadTodos();
+      } catch (e) {
+        setStatus('Saved credentials failed. Please reconnect.', true);
+        showSetup();
+      }
+    } else {
+      showSetup();
+    }
+  })();
+</script>
 </body>
 </html>
