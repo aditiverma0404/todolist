@@ -3,127 +3,306 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>To-Do List</title>
+  <title>Keep</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f0f2f5;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      padding: 48px 16px;
-    }
-
-    .container {
+      font-family: 'Roboto', 'Google Sans', Arial, sans-serif;
       background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-      padding: 40px;
-      width: 100%;
-      max-width: 560px;
+      color: #202124;
+      font-size: 14px;
+      line-height: 20px;
     }
 
-    h1 { font-size: 2rem; font-weight: 700; color: #1a1a2e; margin-bottom: 8px; }
-    .subtitle { color: #6b7280; font-size: 0.95rem; margin-bottom: 32px; }
+    /* ── Header ── */
+    .header {
+      height: 64px;
+      display: flex;
+      align-items: center;
+      padding: 8px;
+      border-bottom: 1px solid #e0e0e0;
+      position: sticky;
+      top: 0;
+      background: #fff;
+      z-index: 50;
+    }
 
-    .add-form { display: flex; gap: 10px; margin-bottom: 32px; }
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-left: 8px;
+      margin-right: 24px;
+    }
 
-    .add-form input[type="text"] {
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .logo-text {
+      font-family: 'Google Sans', sans-serif;
+      font-size: 22px;
+      font-weight: 400;
+      color: #5f6368;
+      letter-spacing: 0;
+    }
+
+    .search-bar {
       flex: 1;
-      padding: 12px 16px;
-      border: 2px solid #e5e7eb;
-      border-radius: 10px;
-      font-size: 1rem;
-      outline: none;
-      transition: border-color 0.2s;
-      color: #1a1a2e;
-    }
-    .add-form input[type="text"]:focus { border-color: #6366f1; }
-
-    .add-form button {
-      padding: 12px 20px;
-      background: #6366f1;
-      color: white;
+      max-width: 720px;
+      height: 48px;
+      background: #f1f3f4;
+      border-radius: 8px;
+      padding: 0 16px;
+      font-size: 16px;
       border: none;
-      border-radius: 10px;
-      font-size: 1rem;
-      font-weight: 600;
+      outline: none;
+      color: #202124;
+    }
+
+    .search-bar:focus {
+      background: #fff;
+      box-shadow: 0 1px 1px 0 rgba(65,69,73,.3), 0 1px 3px 1px rgba(65,69,73,.15);
+    }
+
+    /* ── Main Container ── */
+    .main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px 16px;
+    }
+
+    /* ── Input area (expandable) ── */
+    .note-input-container {
+      max-width: 600px;
+      margin: 0 auto 32px;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      box-shadow: 0 1px 2px 0 rgba(60,64,67,.3), 0 1px 3px 1px rgba(60,64,67,.15);
+      padding: 12px 16px;
+      cursor: text;
+      transition: box-shadow 0.2s;
+    }
+
+    .note-input-container:hover {
+      box-shadow: 0 1px 2px 0 rgba(60,64,67,.3), 0 2px 6px 2px rgba(60,64,67,.15);
+    }
+
+    .note-input-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .note-input {
+      border: none;
+      outline: none;
+      font-size: 16px;
+      font-family: 'Roboto', sans-serif;
+      color: #202124;
+      resize: none;
+      min-height: 20px;
+    }
+
+    .note-input::placeholder {
+      color: #5f6368;
+    }
+
+    .note-input-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .btn {
+      background: none;
+      border: none;
+      padding: 8px 24px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
       cursor: pointer;
+      font-family: 'Google Sans', 'Roboto', sans-serif;
+      color: #202124;
       transition: background 0.2s;
-      white-space: nowrap;
     }
-    .add-form button:hover { background: #4f46e5; }
-    .add-form button:disabled { background: #a5b4fc; cursor: not-allowed; }
 
-    .todo-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-
-    .todo-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 14px 16px;
-      border: 2px solid #f3f4f6;
-      border-radius: 12px;
-      transition: border-color 0.2s, background 0.2s;
+    .btn:hover {
+      background: rgba(95,99,104,0.039);
     }
-    .todo-item:hover { border-color: #e5e7eb; background: #fafafa; }
-    .todo-item.done { background: #f9fafb; border-color: #e5e7eb; }
-    .todo-item.done .task-text { text-decoration: line-through; color: #9ca3af; }
 
-    .toggle-btn {
-      width: 22px; height: 22px;
-      border-radius: 50%;
-      border: 2px solid #d1d5db;
-      background: white;
+    .btn-primary {
+      color: #1967d2;
+    }
+
+    .btn-primary:hover {
+      background: rgba(26,115,232,0.039);
+    }
+
+    /* ── Notes Grid (Masonry) ── */
+    .notes-grid {
+      column-count: 1;
+      column-gap: 16px;
+    }
+
+    @media (min-width: 600px) {
+      .notes-grid { column-count: 2; }
+    }
+
+    @media (min-width: 900px) {
+      .notes-grid { column-count: 3; }
+    }
+
+    .note-card {
+      break-inside: avoid;
+      margin-bottom: 16px;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 12px 16px;
       cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      transition: background 0.2s, border-color 0.2s;
-      padding: 0; font-size: 11px; font-weight: 700; color: white;
+      transition: box-shadow 0.2s;
+      position: relative;
     }
-    .todo-item.done .toggle-btn { background: #6366f1; border-color: #6366f1; }
 
-    .task-text { flex: 1; font-size: 1rem; color: #374151; word-break: break-word; }
-
-    .delete-btn {
-      background: none; border: none; color: #d1d5db;
-      font-size: 1.3rem; cursor: pointer; padding: 4px;
-      border-radius: 6px; transition: color 0.2s, background 0.2s; line-height: 1;
+    .note-card:hover {
+      box-shadow: 0 1px 2px 0 rgba(60,64,67,.3), 0 1px 3px 1px rgba(60,64,67,.15);
     }
-    .delete-btn:hover { color: #ef4444; background: #fef2f2; }
 
-    .empty { text-align: center; color: #9ca3af; font-size: 0.95rem; padding: 32px 0; }
-    .stats { margin-top: 24px; font-size: 0.85rem; color: #9ca3af; text-align: right; }
+    .note-card-content {
+      word-wrap: break-word;
+      color: #202124;
+      font-size: 14px;
+      line-height: 20px;
+      min-height: 46px;
+      display: flex;
+      align-items: center;
+    }
 
-    #status-bar { font-size: 0.8rem; color: #9ca3af; text-align: center; margin-top: 16px; min-height: 18px; }
-    #status-bar.error { color: #ef4444; }
+    .note-card.completed .note-card-content {
+      text-decoration: line-through;
+      color: #5f6368;
+    }
+
+    .note-card-actions {
+      display: flex;
+      gap: 4px;
+      margin-top: 8px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .note-card:hover .note-card-actions {
+      opacity: 1;
+    }
+
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      color: #5f6368;
+      font-size: 18px;
+      transition: background 0.2s;
+    }
+
+    .icon-btn:hover {
+      background: rgba(95,99,104,0.078);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 80px 16px;
+      color: #5f6368;
+    }
+
+    .empty-icon {
+      font-size: 120px;
+      opacity: 0.3;
+      margin-bottom: 16px;
+    }
+
+    .empty-text {
+      font-size: 22px;
+      font-weight: 400;
+      color: #5f6368;
+    }
 
     .config-error {
-      background: #fef2f2;
-      border: 2px solid #fecaca;
-      border-radius: 12px;
-      padding: 20px 24px;
-      color: #b91c1c;
-      font-size: 0.95rem;
-      line-height: 1.6;
+      background: #fce8e6;
+      border: 1px solid #f28b82;
+      border-radius: 8px;
+      padding: 16px 20px;
+      color: #d93025;
+      font-size: 14px;
+      line-height: 20px;
+      max-width: 600px;
+      margin: 32px auto;
     }
-    .config-error strong { display: block; margin-bottom: 6px; font-size: 1rem; }
+
+    .config-error strong {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
     .config-error code {
-      background: #fee2e2;
+      background: rgba(217,48,37,0.1);
       padding: 2px 6px;
       border-radius: 4px;
-      font-family: monospace;
-      font-size: 0.9rem;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 13px;
+    }
+
+    /* Status bar */
+    .status-bar {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #323232;
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-size: 14px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      z-index: 100;
+    }
+
+    .status-bar.show {
+      opacity: 0.9;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>📝 To-Do List</h1>
-    <p class="subtitle">Stay on top of your tasks.</p>
 
+  <!-- Header -->
+  <header class="header">
+    <div class="logo-area">
+      <div class="logo-icon">💡</div>
+      <div class="logo-text">Keep</div>
+    </div>
+    <input type="text" class="search-bar" placeholder="Search" aria-label="Search notes" />
+  </header>
+
+  <!-- Main -->
+  <main class="main">
     {% if not supabase_url or not supabase_key %}
       <div class="config-error">
         <strong>⚠️ Supabase credentials not configured.</strong>
@@ -132,17 +311,35 @@
         <code>SUPABASE_KEY</code> — your anon / publishable API key
       </div>
     {% else %}
-      <form class="add-form" id="add-form">
-        <input type="text" id="task-input" placeholder="Add a new task..." required autocomplete="off" aria-label="New task" />
-        <button type="submit" id="add-btn">Add</button>
-      </form>
+      <!-- Note input -->
+      <div class="note-input-container">
+        <form class="note-input-form" id="note-form">
+          <textarea 
+            class="note-input" 
+            id="note-input" 
+            placeholder="Take a note..."
+            rows="1"
+            required
+          ></textarea>
+          <div class="note-input-actions">
+            <button type="submit" class="btn btn-primary">Add</button>
+          </div>
+        </form>
+      </div>
 
-      <ul class="todo-list" id="todo-list"></ul>
-      <p class="empty" id="empty-msg" style="display:none">No tasks yet. Add one above!</p>
-      <p class="stats" id="stats" style="display:none"></p>
-      <p id="status-bar"></p>
+      <!-- Notes grid -->
+      <div class="notes-grid" id="notes-grid"></div>
+
+      <!-- Empty state -->
+      <div class="empty-state" id="empty-state" style="display:none;">
+        <div class="empty-icon">💡</div>
+        <div class="empty-text">Notes you add appear here</div>
+      </div>
     {% endif %}
-  </div>
+  </main>
+
+  <!-- Status toast -->
+  <div class="status-bar" id="status-bar"></div>
 
 {% if supabase_url and supabase_key %}
 <script>
@@ -152,97 +349,149 @@
   const { createClient } = window.supabase;
   const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  const addForm   = document.getElementById('add-form');
-  const taskInput = document.getElementById('task-input');
-  const addBtn    = document.getElementById('add-btn');
-  const todoList  = document.getElementById('todo-list');
-  const emptyMsg  = document.getElementById('empty-msg');
-  const statsEl   = document.getElementById('stats');
+  const noteForm = document.getElementById('note-form');
+  const noteInput = document.getElementById('note-input');
+  const notesGrid = document.getElementById('notes-grid');
+  const emptyState = document.getElementById('empty-state');
   const statusBar = document.getElementById('status-bar');
 
-  function setStatus(msg, isError = false) {
+  let statusTimeout = null;
+
+  function showStatus(msg) {
     statusBar.textContent = msg;
-    statusBar.className = isError ? 'error' : '';
+    statusBar.classList.add('show');
+    clearTimeout(statusTimeout);
+    statusTimeout = setTimeout(() => {
+      statusBar.classList.remove('show');
+    }, 2000);
   }
 
-  function renderTodos(todos) {
-    todoList.innerHTML = '';
-    if (!todos || todos.length === 0) {
-      emptyMsg.style.display = 'block';
-      statsEl.style.display = 'none';
+  function renderNotes(notes) {
+    notesGrid.innerHTML = '';
+    
+    if (!notes || notes.length === 0) {
+      emptyState.style.display = 'block';
+      notesGrid.style.display = 'none';
       return;
     }
-    emptyMsg.style.display = 'none';
-    statsEl.style.display = 'block';
-    statsEl.textContent = `${todos.filter(t => t.is_complete).length} / ${todos.length} completed`;
 
-    todos.forEach(todo => {
-      const li = document.createElement('li');
-      li.className = 'todo-item' + (todo.is_complete ? ' done' : '');
+    emptyState.style.display = 'none';
+    notesGrid.style.display = 'block';
 
+    notes.forEach(note => {
+      const card = document.createElement('div');
+      card.className = 'note-card' + (note.is_complete ? ' completed' : '');
+      
+      const content = document.createElement('div');
+      content.className = 'note-card-content';
+      content.textContent = note.task;
+
+      const actions = document.createElement('div');
+      actions.className = 'note-card-actions';
+
+      // Toggle button
       const toggleBtn = document.createElement('button');
-      toggleBtn.className = 'toggle-btn';
-      toggleBtn.title = todo.is_complete ? 'Mark incomplete' : 'Mark complete';
-      toggleBtn.setAttribute('aria-label', 'Toggle task');
-      toggleBtn.textContent = todo.is_complete ? '✓' : '';
-      toggleBtn.addEventListener('click', () => toggleTodo(todo.id, todo.is_complete));
+      toggleBtn.className = 'icon-btn';
+      toggleBtn.title = note.is_complete ? 'Mark as incomplete' : 'Mark as complete';
+      toggleBtn.innerHTML = note.is_complete ? '↩' : '✓';
+      toggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleNote(note.id, note.is_complete);
+      });
 
-      const span = document.createElement('span');
-      span.className = 'task-text';
-      span.textContent = todo.task;
+      // Delete button
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'icon-btn';
+      deleteBtn.title = 'Delete note';
+      deleteBtn.innerHTML = '🗑';
+      deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteNote(note.id);
+      });
 
-      const delBtn = document.createElement('button');
-      delBtn.className = 'delete-btn';
-      delBtn.title = 'Delete task';
-      delBtn.setAttribute('aria-label', 'Delete task');
-      delBtn.textContent = '×';
-      delBtn.addEventListener('click', () => deleteTodo(todo.id));
+      actions.appendChild(toggleBtn);
+      actions.appendChild(deleteBtn);
 
-      li.appendChild(toggleBtn);
-      li.appendChild(span);
-      li.appendChild(delBtn);
-      todoList.appendChild(li);
+      card.appendChild(content);
+      card.appendChild(actions);
+      notesGrid.appendChild(card);
     });
   }
 
-  async function loadTodos() {
-    setStatus('Loading…');
+  async function loadNotes() {
     const { data, error } = await db
       .from('todos')
       .select('*')
       .order('created_at', { ascending: false });
-    if (error) { setStatus('Failed to load: ' + error.message, true); return; }
-    renderTodos(data);
-    setStatus('');
+    
+    if (error) {
+      console.error('Failed to load notes:', error);
+      return;
+    }
+    
+    renderNotes(data);
   }
 
-  addForm.addEventListener('submit', async (e) => {
+  noteForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const task = taskInput.value.trim();
+    const task = noteInput.value.trim();
     if (!task) return;
-    addBtn.disabled = true;
-    setStatus('Adding…');
-    const { error } = await db.from('todos').insert({ task, is_complete: false });
-    if (error) { setStatus('Failed to add: ' + error.message, true); }
-    else { taskInput.value = ''; await loadTodos(); }
-    addBtn.disabled = false;
+
+    const { error } = await db
+      .from('todos')
+      .insert({ task, is_complete: false });
+    
+    if (error) {
+      showStatus('Failed to add note');
+      console.error(error);
+      return;
+    }
+
+    noteInput.value = '';
+    noteInput.rows = 1;
+    await loadNotes();
   });
 
-  async function toggleTodo(id, current) {
-    setStatus('Updating…');
-    const { error } = await db.from('todos').update({ is_complete: !current }).eq('id', id);
-    if (error) { setStatus('Failed to update: ' + error.message, true); return; }
-    await loadTodos();
+  async function toggleNote(id, currentState) {
+    const { error } = await db
+      .from('todos')
+      .update({ is_complete: !currentState })
+      .eq('id', id);
+    
+    if (error) {
+      showStatus('Failed to update');
+      console.error(error);
+      return;
+    }
+
+    await loadNotes();
   }
 
-  async function deleteTodo(id) {
-    setStatus('Deleting…');
-    const { error } = await db.from('todos').delete().eq('id', id);
-    if (error) { setStatus('Failed to delete: ' + error.message, true); return; }
-    await loadTodos();
+  async function deleteNote(id) {
+    const { error } = await db
+      .from('todos')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      showStatus('Failed to delete');
+      console.error(error);
+      return;
+    }
+
+    showStatus('Note deleted');
+    await loadNotes();
   }
 
-  loadTodos();
+  // Auto-expand textarea
+  noteInput.addEventListener('input', () => {
+    noteInput.rows = 1;
+    const rows = Math.ceil(noteInput.scrollHeight / 20);
+    noteInput.rows = Math.min(rows, 10);
+  });
+
+  // Initial load
+  loadNotes();
 </script>
 {% endif %}
 </body>
