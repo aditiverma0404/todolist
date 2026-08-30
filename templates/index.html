@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>To-Do List</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 48px 16px;
+    }
+
+    .container {
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+      padding: 40px;
+      width: 100%;
+      max-width: 560px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #6b7280;
+      font-size: 0.95rem;
+      margin-bottom: 32px;
+    }
+
+    .add-form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 32px;
+    }
+
+    .add-form input[type="text"] {
+      flex: 1;
+      padding: 12px 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 10px;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+      color: #1a1a2e;
+    }
+
+    .add-form input[type="text"]:focus {
+      border-color: #6366f1;
+    }
+
+    .add-form button {
+      padding: 12px 20px;
+      background: #6366f1;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    .add-form button:hover {
+      background: #4f46e5;
+    }
+
+    .todo-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .todo-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border: 2px solid #f3f4f6;
+      border-radius: 12px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .todo-item:hover {
+      border-color: #e5e7eb;
+      background: #fafafa;
+    }
+
+    .todo-item.done {
+      background: #f9fafb;
+      border-color: #e5e7eb;
+    }
+
+    .todo-item.done .task-text {
+      text-decoration: line-through;
+      color: #9ca3af;
+    }
+
+    .toggle-form button {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid #d1d5db;
+      background: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.2s, border-color 0.2s;
+      padding: 0;
+    }
+
+    .todo-item.done .toggle-form button {
+      background: #6366f1;
+      border-color: #6366f1;
+    }
+
+    .toggle-form button::after {
+      content: '';
+      display: block;
+      width: 10px;
+      height: 10px;
+    }
+
+    .todo-item.done .toggle-form button::after {
+      content: '✓';
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .task-text {
+      flex: 1;
+      font-size: 1rem;
+      color: #374151;
+      word-break: break-word;
+    }
+
+    .delete-form button {
+      background: none;
+      border: none;
+      color: #d1d5db;
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      transition: color 0.2s, background 0.2s;
+      line-height: 1;
+    }
+
+    .delete-form button:hover {
+      color: #ef4444;
+      background: #fef2f2;
+    }
+
+    .empty {
+      text-align: center;
+      color: #9ca3af;
+      font-size: 0.95rem;
+      padding: 32px 0;
+    }
+
+    .stats {
+      margin-top: 24px;
+      font-size: 0.85rem;
+      color: #9ca3af;
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📝 To-Do List</h1>
+    <p class="subtitle">Stay on top of your tasks.</p>
+
+    <form class="add-form" action="/add" method="POST">
+      <input
+        type="text"
+        name="task"
+        placeholder="Add a new task..."
+        required
+        autocomplete="off"
+        aria-label="New task"
+      />
+      <button type="submit">Add</button>
+    </form>
+
+    {% if todos %}
+      <ul class="todo-list">
+        {% for todo in todos %}
+          <li class="todo-item {% if todo.is_complete %}done{% endif %}">
+            <form class="toggle-form" action="/toggle/{{ todo.id }}" method="POST">
+              <button type="submit" title="{% if todo.is_complete %}Mark incomplete{% else %}Mark complete{% endif %}" aria-label="Toggle task"></button>
+            </form>
+            <span class="task-text">{{ todo.task }}</span>
+            <form class="delete-form" action="/delete/{{ todo.id }}" method="POST">
+              <button type="submit" title="Delete task" aria-label="Delete task">×</button>
+            </form>
+          </li>
+        {% endfor %}
+      </ul>
+      <p class="stats">
+        {{ todos | selectattr('is_complete') | list | length }} / {{ todos | length }} completed
+      </p>
+    {% else %}
+      <p class="empty">No tasks yet. Add one above!</p>
+    {% endif %}
+  </div>
+</body>
+</html>
